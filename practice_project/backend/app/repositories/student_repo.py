@@ -1,51 +1,71 @@
-from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 from practice_project.backend.app.models.student import Student
+from practice_project.backend.app.models.group import Group
 
 
-def get_students(
-    db: Session,
+async def get_students(
+    db: AsyncSession,
     skip: int = 0,
     limit: int = 100,
     search: str | None = None,
     group_id: int | None = None,
 ):
-    query = db.query(Student)
+    query = select(Student)
     if search:
-        query = query.filter(
+        query = query.where(
             Student.first_name.ilike(f"%{search}%")
             | Student.last_name.ilike(f"%{search}%")
             | Student.email.ilike(f"%{search}%")
         )
     if group_id is not None:
-        query = query.filter(Student.group_id == group_id)
-    return query.offset(skip).limit(limit).all()
+        query = query.where(Student.group_id == group_id)
+    query = query.offset(skip).limit(limit).order_by(Student.id)
+    result = await db.execute(query)
+    students = result.scalars().all()
+
+    for student in students:
+        if student.group_id:
+            grp = await db.get(Group, student.group_id)
+            student.group_name = grp.name if grp else None
+        else:
+            student.group_name = None
+
+    return students
 
 
-def get_student_by_id(db: Session, student_id: int):
-    return db.query(Student).filter(Student.id == student_id).first()
+async def get_student_by_id(db: AsyncSession, student_id: int):
+    result = await db.execute(select(Student).where(Student.id == student_id))
+    student = result.scalar_one_or_none()
+    if student:
+        if student.group_id:
+            grp = await db.get(Group, student.group_id)
+            student.group_name = grp.name if grp else None
+    return student
 
 
-def get_student_by_email(db: Session, email: str):
-    return db.query(Student).filter(Student.email == email).first()
+async def get_student_by_email(db: AsyncSession, email: str):
+    result = await db.execute(select(Student).where(Student.email == email))
+    return result.scalar_one_or_none()
 
 
-def create_student(db: Session, student_data):
+async def create_student(db: AsyncSession, student_data):
     student = Student(**student_data.model_dump())
     db.add(student)
-    db.commit()
-    db.refresh(student)
+    await db.commit()
+    await db.refresh(student)
     return student
 
 
-def update_student(db: Session, student: Student, update_data):
+async def update_student(db: AsyncSession, student: Student, update_data):
     for field, value in update_data.model_dump(exclude_unset=True).items():
         setattr(student, field, value)
-    db.commit()
-    db.refresh(student)
+    await db.commit()
+    await db.refresh(student)
     return student
 
 
-def delete_student(db: Session, student: Student):
-    db.delete(student)
-    db.commit()
+async def delete_student(db: AsyncSession, student: Student):
+    await db.delete(student)
+    await db.commit()
     return student

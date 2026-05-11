@@ -3,6 +3,7 @@ from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from practice_project.backend.app.database import Base
 
+
 class Group(Base):
     __tablename__ = "groups"
 

@@ -1,0 +1,21 @@
+# Окружение
+venv/
+.venv/
+.env
+*.pyc
+__pycache__/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Системные
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Логи
+logs/
+*.log
