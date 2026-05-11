@@ -7,3 +7,4 @@ load_dotenv(env_path)
 
 APP_NAME = os.getenv("APP_NAME", "student_crm")
 APP_VERSION = os.getenv("APP_VERSION", "0.1.0")
+DATABASE_URL = os.getenv("DATABASE_URL")
