@@ -6,8 +6,17 @@ from practice_project.backend.app.api.students import router as students_router
 from practice_project.backend.app.api.groups import router as groups_router
 from practice_project.backend.app.api.grades import router as grades_router
 from practice_project.backend.app.logger import logger
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(students_router)
 app.include_router(groups_router)
