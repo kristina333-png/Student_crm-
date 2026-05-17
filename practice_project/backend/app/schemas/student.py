@@ -1,15 +1,15 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
 from datetime import date
+from typing import List
 
 
 class StudentBase(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=50, description="Имя")
     last_name: str = Field(..., min_length=1, max_length=50, description="Фамилия")
     email: EmailStr = Field(..., description="Email")
-    phone: Optional[str] = Field(None, max_length=20, description="Телефон")
-    group_id: Optional[int] = Field(None, description="ID группы")
-    enrollment_date: Optional[date] = Field(None, description="Дата зачисления")
+    phone: str = Field(None, max_length=20, description="Телефон")
+    group_id: int = Field(None, description="ID группы")
+    enrollment_date: date = Field(None, description="Дата зачисления")
 
 
 class StudentCreate(StudentBase):
@@ -17,17 +17,27 @@ class StudentCreate(StudentBase):
 
 
 class StudentUpdate(BaseModel):
-    first_name: Optional[str] = Field(None, min_length=1, max_length=50)
-    last_name: Optional[str] = Field(None, min_length=1, max_length=50)
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = Field(None, max_length=20)
-    group_id: Optional[int] = None
-    enrollment_date: Optional[date] = None
+    first_name: str = Field(None, min_length=1, max_length=50)
+    last_name: str = Field(None, min_length=1, max_length=50)
+    email: EmailStr = None
+    phone: str = Field(None, max_length=20)
+    group_id: int = None
+    enrollment_date: date = None
 
 
 class StudentResponse(StudentBase):
     id: int
-    group_name: Optional[str] = None
+    phone: str | None = None
+    group_id: int | None = None
+    enrollment_date: date | None = None
+    group_name: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+
+
+class StudentListResponse(BaseModel):
+    items: List[StudentResponse]
+    total: int
+    page: int
+    limit: int
+    pages: int

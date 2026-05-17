@@ -1,10 +1,10 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List
 
 
 class GroupBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = Field(None)
+    description: str = Field(None)
 
 
 class GroupCreate(GroupBase):
@@ -12,13 +12,21 @@ class GroupCreate(GroupBase):
 
 
 class GroupUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = None
+    name: str = Field(None, min_length=1, max_length=100)
+    description: str = None
 
 
 class GroupResponse(GroupBase):
     id: int
     student_count: int = 0
+    description: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+
+
+class GroupListResponse(BaseModel):
+    items: List[GroupResponse]
+    total: int
+    page: int
+    limit: int
+    pages: int

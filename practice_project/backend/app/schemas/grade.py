@@ -1,13 +1,13 @@
 from pydantic import BaseModel, Field
-from typing import Optional
 from datetime import date
+from typing import List
 
 
 class GradeBase(BaseModel):
     student_id: int = Field(..., description="ID студента")
     subject: str = Field(..., min_length=1, max_length=100)
     score: float = Field(..., ge=1, le=5)
-    grade_date: Optional[date] = Field(None)
+    grade_date: date = Field(None)
 
 
 class GradeCreate(GradeBase):
@@ -15,13 +15,21 @@ class GradeCreate(GradeBase):
 
 
 class GradeUpdate(BaseModel):
-    subject: Optional[str] = Field(None, min_length=1, max_length=100)
-    score: Optional[float] = Field(None, ge=1, le=5)
-    grade_date: Optional[date] = None
+    subject: str = Field(None, min_length=1, max_length=100)
+    score: float = Field(None, ge=1, le=5)
+    grade_date: date = None
 
 
 class GradeResponse(GradeBase):
     id: int
+    grade_date: date | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
+
+
+class GradeListResponse(BaseModel):
+    items: List[GradeResponse]
+    total: int
+    page: int
+    limit: int
+    pages: int

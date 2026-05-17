@@ -2,10 +2,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from practice_project.backend.app.schemas.student import StudentCreate, StudentUpdate
 from practice_project.backend.app.repositories import student_repo
+from practice_project.backend.app.logger import logger
 
 
-async def list_students(db: AsyncSession, skip: int, limit: int, search: str | None, group_id: int | None):
-    return await student_repo.get_students(db, skip, limit, search, group_id)
+async def list_students(
+    db: AsyncSession, skip: int, limit: int, search: str | None,
+    group_id: int | None, sort_by: str, order: str,
+) -> dict:
+    students, total = await student_repo.get_students(db, skip, limit, search, group_id, sort_by, order)
+    return {
+        "items": students,
+        "total": total,
+        "page": skip // limit + 1 if limit else 1,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit if limit else 1,
+    }
 
 
 async def get_student(db: AsyncSession, student_id: int):
@@ -19,7 +30,9 @@ async def create_student(db: AsyncSession, student_data: StudentCreate):
     existing = await student_repo.get_student_by_email(db, student_data.email)
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Студент с таким email уже существует")
-    return await student_repo.create_student(db, student_data)
+    student = await student_repo.create_student(db, student_data)
+    logger.info(f"Создан студент: {student.first_name} {student.last_name} (id={student.id})")
+    return student
 
 
 async def update_student(db: AsyncSession, student_id: int, update_data: StudentUpdate):
@@ -28,9 +41,12 @@ async def update_student(db: AsyncSession, student_id: int, update_data: Student
         existing = await student_repo.get_student_by_email(db, update_data.email)
         if existing:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Студент с таким email уже существует")
-    return await student_repo.update_student(db, student, update_data)
+    updated = await student_repo.update_student(db, student, update_data)
+    logger.info(f"Обновлён студент: id={student_id}")
+    return updated
 
 
-async def delete_student(db: AsyncSession, student_id: int):
+async def delete_student(db: AsyncSession, student_id: int) -> None:
     student = await get_student(db, student_id)
-    return await student_repo.delete_student(db, student)
+    await student_repo.delete_student(db, student)
+    logger.info(f"Удалён студент: id={student_id}")

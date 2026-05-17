@@ -12,7 +12,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL не задан в .env файле")
 
-ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
+ASYNC_DATABASE_URL = DATABASE_URL
 
 engine = create_async_engine(ASYNC_DATABASE_URL)
 

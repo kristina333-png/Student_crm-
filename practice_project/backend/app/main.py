@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from practice_project.backend.app.api.students import router as students_router
 from practice_project.backend.app.api.groups import router as groups_router
 from practice_project.backend.app.api.grades import router as grades_router
+from practice_project.backend.app.logger import logger
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
 
@@ -17,6 +18,7 @@ app.include_router(grades_router)
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        logger.info("Приложение запущено")
 
 
 @app.get("/health")

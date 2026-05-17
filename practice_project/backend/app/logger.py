@@ -1,0 +1,22 @@
+import logging
+import sys
+from pathlib import Path
+
+# Создаём папку logs, если её нет
+Path("logs").mkdir(exist_ok=True)
+
+logger = logging.getLogger("student_crm")
+logger.setLevel(logging.INFO)
+
+formatter = logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+file_handler = logging.FileHandler("logs/app.log", encoding="utf-8")
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)

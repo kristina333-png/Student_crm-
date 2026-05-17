@@ -1,21 +1,23 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from practice_project.backend.app.database import get_db
-from practice_project.backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse
+from practice_project.backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentListResponse
 from practice_project.backend.app.services import student_service
 
 router = APIRouter(prefix="/students", tags=["students"])
 
 
-@router.get("/", response_model=list[StudentResponse])
+@router.get("/", response_model=StudentListResponse)
 async def get_students(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     search: str | None = Query(None),
     group_id: int | None = Query(None),
+    sort_by: str = Query("id"),
+    order: str = Query("asc", pattern="^(asc|desc)$"),
     db: AsyncSession = Depends(get_db),
 ):
-    return await student_service.list_students(db, skip, limit, search, group_id)
+    return await student_service.list_students(db, skip, limit, search, group_id, sort_by, order)
 
 
 @router.get("/{student_id}", response_model=StudentResponse)
