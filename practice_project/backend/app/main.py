@@ -7,6 +7,7 @@ from practice_project.backend.app.api.groups import router as groups_router
 from practice_project.backend.app.api.grades import router as grades_router
 from practice_project.backend.app.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
+from practice_project.backend.app.api.comments import router as comments_router
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION)
 
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(students_router)
 app.include_router(groups_router)
 app.include_router(grades_router)
+app.include_router(comments_router)
 
 
 @app.on_event("startup")

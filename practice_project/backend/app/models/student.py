@@ -20,3 +20,6 @@ class Student(Base):
     grades: Mapped[List["Grade"]] = relationship(
         "Grade", back_populates="student", cascade="all, delete-orphan"
     )
+    comments: Mapped[list["Comment"]] = relationship(
+        "Comment", back_populates="student", cascade="all, delete-orphan"
+    )

@@ -1,3 +1,7 @@
+import sys
+import asyncio
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 from datetime import date
 from practice_project.backend.app.database import SessionLocal, engine, Base
 from practice_project.backend.app.models import Group, Student, Grade

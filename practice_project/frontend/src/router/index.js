@@ -4,6 +4,7 @@ import StudentsPage from "../pages/StudentsPage.vue";
 import CreateStudentPage from "../pages/CreateStudentPage.vue";
 import EditStudentPage from "../pages/EditStudentPage.vue";
 import AboutPage from "../pages/AboutPage.vue";
+import StudentDetailPage from "../pages/StudentDetailPage.vue";
 
 const routes = [
   { path: "/", component: HomePage },
@@ -11,6 +12,7 @@ const routes = [
   { path: "/students/create", component: CreateStudentPage },
   { path: "/students/:id/edit", component: EditStudentPage },
   { path: "/about", component: AboutPage },
+  { path: "/students/:id", component: StudentDetailPage },
 ];
 
 const router = createRouter({
