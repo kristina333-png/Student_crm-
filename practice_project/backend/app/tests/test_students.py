@@ -25,8 +25,10 @@ async def test_get_students(client):
     response = await client.get("/students/")
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) >= 1
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+    assert len(data["items"]) >= 1
 
 
 @pytest.mark.asyncio

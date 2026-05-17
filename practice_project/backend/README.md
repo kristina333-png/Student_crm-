@@ -8,27 +8,17 @@
 
 ## Быстрый старт
 
-### 1. Клонировать репозиторий
+### Backend
+cd practice_project/backend
+venv\Scripts\activate
+uvicorn practice_project.backend.app.main:app --reload
 
-    git clone https://github.com/kristina333-png/Student_crm-.git
-    cd Student_crm-/practice_project
+### Frontend
+cd practice_project/frontend
+npm run dev
 
-### 2. Настроить окружение
+## Тестовые данные
+python backend/app/seed.py
 
-    cd backend
-    python -m venv venv
-    venv\Scripts\activate
-    pip install -r requirements.txt
-
-### 3. Настроить .env
-
-Скопируй .env.example в .env и укажи DATABASE_URL для PostgreSQL.
-
-### 4. Создать таблицы и заполнить данными
-
-    cd app
-    python seed.py
-
-### 5. Запустить backend
-
-    uvicorn main:app --reload
+## Тесты
+python -m pytest backend/app/tests/ -v

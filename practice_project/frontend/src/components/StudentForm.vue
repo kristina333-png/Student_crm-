@@ -79,37 +79,52 @@ function handleSubmit() {
 
 <style scoped>
 .student-form {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-width: 400px;
+  gap: 15px;
 }
 label {
   display: flex;
   flex-direction: column;
-  font-weight: bold;
+  font-weight: 500;
+  color: #2c3e50;
   gap: 4px;
 }
 input {
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 10px 14px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95em;
+  transition: border-color 0.3s;
+}
+input:focus {
+  border-color: #3498db;
+  outline: none;
 }
 button {
-  padding: 8px 16px;
-  background: #007bff;
+  padding: 12px 24px;
+  background: #3498db;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 1em;
   cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 10px;
 }
 button:hover {
-  background: #0056b3;
+  background: #2980b9;
 }
 .error {
-  color: red;
   background: #ffe6e6;
-  padding: 8px;
-  border-radius: 4px;
+  color: #e74c3c;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e74c3c;
 }
 </style>

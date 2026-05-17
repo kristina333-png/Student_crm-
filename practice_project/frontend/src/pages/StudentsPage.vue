@@ -1,19 +1,20 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { getStudents, deleteStudent } from "../api/students";
 import { getGroups } from "../api/groups";
 
 const router = useRouter();
+const route = useRoute();
 
 const students = ref([]);
 const groups = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-const search = ref("");
-const groupId = ref(null);
-const currentPage = ref(1);
+const search = ref(route.query.search || "");
+const groupId = ref(route.query.group_id ? Number(route.query.group_id) : null);
+const currentPage = ref(Number(route.query.page) || 1);
 const limit = 10;
 const total = ref(0);
 const pages = ref(0);
@@ -41,6 +42,11 @@ async function loadStudents() {
     };
     if (search.value) params.search = search.value;
     if (groupId.value) params.group_id = groupId.value;
+
+    const query = { page: currentPage.value };
+    if (search.value) query.search = search.value;
+    if (groupId.value) query.group_id = groupId.value;
+    router.replace({ query });
 
     const res = await getStudents(params);
     students.value = res.data.items;
@@ -92,17 +98,15 @@ async function handleDelete(id) {
 
     <div class="controls">
       <input v-model="search" placeholder="Поиск по имени или email..." @keyup.enter="loadStudents" />
-
       <select v-model="groupId">
         <option :value="null">Все группы</option>
         <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
       </select>
-
       <button class="btn-add" @click="goToCreate">+ Создать</button>
     </div>
 
-    <div v-if="loading">Загрузка...</div>
-    <div v-else-if="error">Ошибка: {{ error }}</div>
+    <div v-if="loading" class="loader">Загрузка...</div>
+    <div v-else-if="error" class="error-msg">Ошибка: {{ error }}</div>
 
     <table v-else>
       <thead>
@@ -116,15 +120,15 @@ async function handleDelete(id) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="student in students" :key="student.id" @click="goToDetail(student.id)" style="cursor:pointer">
+        <tr v-for="student in students" :key="student.id" @click="goToDetail(student.id)" class="clickable">
           <td>{{ student.id }}</td>
           <td>{{ student.first_name }}</td>
           <td>{{ student.last_name }}</td>
           <td>{{ student.email }}</td>
           <td>{{ student.group_name || "—" }}</td>
-          <td @click.stop>
-            <button @click="goToEdit(student.id)">Редактировать</button>
-            <button @click="handleDelete(student.id)">Удалить</button>
+          <td @click.stop class="actions-cell">
+            <button class="btn-icon" @click="goToEdit(student.id)" title="Редактировать">Редактировать</button>
+            <button class="btn-icon" @click="handleDelete(student.id)" title="Удалить">Удалить</button>
           </td>
         </tr>
       </tbody>
@@ -141,55 +145,116 @@ async function handleDelete(id) {
 <style scoped>
 .controls {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 12px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: center;
+}
+.controls input, .controls select {
+  padding: 10px 14px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95em;
+  transition: border-color 0.3s;
+}
+.controls input:focus, .controls select:focus {
+  border-color: #3498db;
+  outline: none;
 }
 .controls input {
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 200px;
-}
-.controls select {
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 250px;
 }
 .btn-add {
-  padding: 8px 16px;
-  background: #28a745;
+  padding: 10px 20px;
+  background: #3498db;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 0.95em;
   cursor: pointer;
+  transition: background 0.3s;
 }
 .btn-add:hover {
-  background: #218838;
+  background: #2980b9;
 }
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 15px;
+.loader {
+  text-align: center;
+  padding: 40px;
+  color: #95a5a6;
+  font-size: 1.1em;
 }
-.pagination button {
-  padding: 6px 12px;
-  cursor: pointer;
+.error-msg {
+  background: #ffe6e6;
+  color: #e74c3c;
+  padding: 15px;
+  border-radius: 8px;
 }
 table {
   width: 100%;
   border-collapse: collapse;
-}
-th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
 }
 th {
-  background-color: #f2f2f2;
+  background: #34495e;
+  color: white;
+  padding: 14px;
+  text-align: left;
+  font-weight: 500;
 }
-tr:hover {
-  background-color: #f5f5f5;
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+}
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
+  background: #f8fafc;
+}
+.actions-cell {
+  white-space: nowrap;
+}
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.btn-icon:hover {
+  background: #eee;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.pagination button {
+  padding: 8px 16px;
+  border: 2px solid #3498db;
+  background: white;
+  color: #3498db;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.pagination button:hover:not(:disabled) {
+  background: #3498db;
+  color: white;
+}
+.pagination button:disabled {
+  border-color: #ddd;
+  color: #ccc;
+  cursor: not-allowed;
+}
+.pagination span {
+  color: #7f8c8d;
 }
 </style>
