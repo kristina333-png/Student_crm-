@@ -1,12 +1,19 @@
 <template>
   <div id="app">
-    <header>
+    <header v-if="isLoggedIn">
       <div class="logo">Student CRM</div>
       <nav>
         <router-link to="/">Главная</router-link>
         <router-link to="/students">Студенты</router-link>
+        <router-link to="/grades">Оценки</router-link>
+        <router-link to="/groups">Группы</router-link>
+        <router-link v-if="userRole === 'admin'" to="/register">Регистрация</router-link>
         <router-link to="/about">О проекте</router-link>
+        <button class="logout-btn" @click="logout">Выйти</button>
       </nav>
+    </header>
+    <header v-else class="simple-header">
+      <div class="logo">Student CRM</div>
     </header>
     <main>
       <router-view />
@@ -16,6 +23,37 @@
     </footer>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
+
+const router = useRouter();
+const route = useRoute();
+const isLoggedIn = ref(false);
+const userRole = ref("");
+
+function checkAuth() {
+  isLoggedIn.value = !!localStorage.getItem("accessToken");
+  userRole.value = localStorage.getItem("userRole") || "";
+}
+
+function logout() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userId");
+  checkAuth();
+  router.push("/login");
+}
+
+onMounted(() => {
+  checkAuth();
+  watch(() => route.path, () => {
+    checkAuth();
+  });
+});
+</script>
 
 <style>
 * {
@@ -40,6 +78,16 @@ header {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+.simple-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 30px;
+  background: #2c3e50;
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 .logo {
   font-size: 1.5em;
   font-weight: bold;
@@ -48,6 +96,7 @@ header {
 nav {
   display: flex;
   gap: 25px;
+  align-items: center;
 }
 
 nav a {
@@ -57,8 +106,28 @@ nav a {
   transition: color 0.3s;
 }
 
-nav a:hover, nav a.router-link-exact-active {
+nav a:hover {
   color: #3498db;
+}
+
+nav a.router-link-exact-active {
+  color: #3498db;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 1em;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.3s;
+}
+
+.logout-btn:hover {
+  color: #c0392b;
 }
 
 main {

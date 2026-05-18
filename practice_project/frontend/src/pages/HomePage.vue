@@ -1,11 +1,11 @@
 <template>
   <div class="home">
     <div class="hero">
-      <h1>🎓 Student CRM</h1>
+      <h1>Student CRM</h1>
       <p class="subtitle">Система управления студентами, группами и оценками</p>
       <div class="actions">
-        <router-link to="/students" class="btn-primary">📋 Список студентов</router-link>
-        <router-link to="/students/create" class="btn-secondary">➕ Добавить студента</router-link>
+        <router-link to="/students" class="btn-primary">Список студентов</router-link>
+        <router-link to="/students/create" class="btn-secondary">Добавить студента</router-link>
       </div>
     </div>
   </div>

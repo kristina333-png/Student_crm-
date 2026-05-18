@@ -11,11 +11,16 @@ const emit = defineEmits(["submit"]);
 
 const students = ref([]);
 
+function getToday() {
+  const d = new Date();
+  return d.toISOString().split("T")[0];
+}
+
 const form = ref({
   student_id: props.initialData.student_id || "",
   subject: props.initialData.subject || "",
   score: props.initialData.score || "",
-  grade_date: props.initialData.grade_date || "",
+  grade_date: props.initialData.grade_date || getToday(),
 });
 
 const error = ref(null);
@@ -23,6 +28,10 @@ const error = ref(null);
 onMounted(async () => {
   const res = await getStudents({ limit: 100 });
   students.value = res.data.items;
+  // Если дата не задана — ставим сегодня
+  if (!form.value.grade_date) {
+    form.value.grade_date = getToday();
+  }
 });
 
 function handleSubmit() {
@@ -34,7 +43,7 @@ function handleSubmit() {
     student_id: Number(form.value.student_id),
     subject: form.value.subject,
     score: Number(form.value.score),
-    grade_date: form.value.grade_date || null,
+    grade_date: form.value.grade_date || getToday(),
   });
 }
 </script>
