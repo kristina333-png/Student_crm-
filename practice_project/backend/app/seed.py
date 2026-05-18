@@ -4,7 +4,8 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 from datetime import date
 from practice_project.backend.app.database import SessionLocal, engine, Base
-from practice_project.backend.app.models import Group, Student, Grade
+from practice_project.backend.app.models import Group, Student, Grade, User
+from practice_project.backend.app.auth_jwt.jwt_handler import get_password_hash
 
 
 async def seed():
@@ -13,10 +14,19 @@ async def seed():
 
     async with SessionLocal() as db:
         from sqlalchemy import select, func
-        result = await db.execute(select(func.count(Group.id)))
+        result = await db.execute(select(func.count(User.id)))
         if result.scalar() > 0:
             print("База уже содержит данные. Пропускаем заполнение.")
             return
+
+        # Пользователи с хешированными паролями
+        users = [
+            User(username="admin", password=get_password_hash("admin123"), role="admin", full_name="Администратор"),
+            User(username="teacher", password=get_password_hash("teacher123"), role="teacher",
+                 full_name="Преподаватель"),
+            User(username="student", password=get_password_hash("student123"), role="student", full_name="Студент"),
+        ]
+        db.add_all(users)
 
         groups = [
             Group(name="ИТ-31", description="Информационные технологии, 3 курс"),

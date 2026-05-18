@@ -3,7 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from practice_project.backend.app.database import get_db
 from practice_project.backend.app.schemas.group import GroupCreate, GroupUpdate, GroupResponse, GroupListResponse
 from practice_project.backend.app.services import group_service
-from practice_project.backend.app.auth import get_current_role, check_permission
+from practice_project.backend.app.auth_jwt.current_user import get_current_user
+from practice_project.backend.app.auth import check_permission
+from practice_project.backend.app.models.user import User
 
 router = APIRouter(prefix="/groups", tags=["groups"])
 
@@ -16,36 +18,53 @@ async def get_groups(
     sort_by: str = Query("id"),
     order: str = Query("asc", pattern="^(asc|desc)$"),
     db: AsyncSession = Depends(get_db),
-    role: str = Depends(get_current_role),
+    current_user: User = Depends(get_current_user),
 ):
-    if not check_permission(role, "read"):
+    if not check_permission(current_user.role, "read"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await group_service.list_groups(db, skip, limit, search, sort_by, order)
 
 
 @router.get("/{group_id}", response_model=GroupResponse)
-async def get_group(group_id: int, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "read"):
+async def get_group(
+    group_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "read"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await group_service.get_group(db, group_id)
 
 
 @router.post("/", response_model=GroupResponse, status_code=201)
-async def create_group(group_data: GroupCreate, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "create"):
+async def create_group(
+    group_data: GroupCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "create"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await group_service.create_group(db, group_data)
 
 
 @router.put("/{group_id}", response_model=GroupResponse)
-async def update_group(group_id: int, group_data: GroupUpdate, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "update"):
+async def update_group(
+    group_id: int,
+    group_data: GroupUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "update"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await group_service.update_group(db, group_id, group_data)
 
 
 @router.delete("/{group_id}", status_code=204)
-async def delete_group(group_id: int, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "delete"):
+async def delete_group(
+    group_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "delete"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     await group_service.delete_group(db, group_id)

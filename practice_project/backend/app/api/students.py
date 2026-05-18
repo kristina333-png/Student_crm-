@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, Query, Request, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from practice_project.backend.app.database import get_db
 from practice_project.backend.app.schemas.student import StudentCreate, StudentUpdate, StudentResponse, StudentListResponse
 from practice_project.backend.app.services import student_service
-from practice_project.backend.app.auth import get_current_role, check_permission
+from practice_project.backend.app.auth_jwt.current_user import get_current_user
+from practice_project.backend.app.auth import check_permission
+from practice_project.backend.app.models.user import User
 
 router = APIRouter(prefix="/students", tags=["students"])
 
@@ -17,36 +19,52 @@ async def get_students(
     sort_by: str = Query("id"),
     order: str = Query("asc", pattern="^(asc|desc)$"),
     db: AsyncSession = Depends(get_db),
-    role: str = Depends(get_current_role),  # <-- добавили
+    current_user: User = Depends(get_current_user),
 ):
-    if not check_permission(role, "read"):
+    if not check_permission(current_user.role, "read"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await student_service.list_students(db, skip, limit, search, group_id, sort_by, order)
 
 
 @router.get("/{student_id}", response_model=StudentResponse)
-async def get_student(student_id: int, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "read"):
+async def get_student(
+    student_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "read"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await student_service.get_student(db, student_id)
 
 
 @router.post("/", response_model=StudentResponse, status_code=201)
-async def create_student(student_data: StudentCreate, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "create"):
+async def create_student(
+    student_data: StudentCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "create"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await student_service.create_student(db, student_data)
 
 
 @router.put("/{student_id}", response_model=StudentResponse)
-async def update_student(student_id: int, student_data: StudentUpdate, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "update"):
+async def update_student(
+    student_id: int,
+    student_data: StudentUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "update"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     return await student_service.update_student(db, student_id, student_data)
 
-
 @router.delete("/{student_id}", status_code=204)
-async def delete_student(student_id: int, db: AsyncSession = Depends(get_db), role: str = Depends(get_current_role)):
-    if not check_permission(role, "delete"):
+async def delete_student(
+    student_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not check_permission(current_user.role, "delete"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     await student_service.delete_student(db, student_id)
